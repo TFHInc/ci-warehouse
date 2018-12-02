@@ -1,0 +1,33 @@
+{
+    "name": "tfhinc/ci-warehouse",
+    "description": "Get the fork lift - Manage data repositories with cache and database layers in the Codeigniter framework.",
+    "keywords": ["codeigniter", "ci-warehouse", "repository", "repositories", "cache", "database"],
+    "homepage": "https://github.com/TFHInc/ci-warehouse",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Colin Rafuse",
+            "email": "colin.rafuse@gmail.com",
+            "homepage": "http://colinrafuse.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php" : ">=7.1.0",
+        "tfhinc/ci-realredis": "~1.*"
+    },
+    "require-dev": {
+        "phpunit/phpunit" : "4.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "TFHInc\\Warehouse\\": "src"
+        }
+    },
+    "scripts": {
+        "publish-files": [
+            "@php -r \"copy('src/Libraries/Warehouse.php', '../../../application/libraries/Warehouse.php');\"",
+            "@php -r \"copy('src/Helpers/warehouse_helper.php', '../../../application/helpers/warehouse_helper.php');\""
+        ]
+    }
+}
