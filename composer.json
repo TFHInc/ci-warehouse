@@ -26,6 +26,7 @@
     },
     "scripts": {
         "publish-files": [
+            "@php -r \"copy('src/Config/warehouse.php', '../../../application/config/warehouse.php');\"",
             "@php -r \"copy('src/Libraries/Warehouse.php', '../../../application/libraries/Warehouse.php');\"",
             "@php -r \"copy('src/Helpers/warehouse_helper.php', '../../../application/helpers/warehouse_helper.php');\""
         ]

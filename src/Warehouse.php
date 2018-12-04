@@ -12,11 +12,15 @@ namespace TFHInc\Warehouse;
  */
 class Warehouse {
     /**
-     * @var object
+     * CodeIgnitor instance array
+     *
+     * @var array
      */
     protected $CI;
 
     /**
+     * Configuration array
+     *
      * @var array
      */
     protected $config;
@@ -32,15 +36,14 @@ class Warehouse {
         $this->CI =& get_instance();
 
         // Load the Warehouse config file located in application/confw/warehouse.php
-        //$this->CI->config->load('warehouse', TRUE);
+        $this->CI->config->load('warehouse', TRUE);
 
-        // Validate the configuration
+        // TODO: Validate the configuration
         //$this->validateConfiguration();
 
         // Define the configuration
-        // $this->config['connections'] = $this->CI->config->item('connections', 'echelon');
-        // $this->config['queues'] = $this->CI->config->item('queues', 'echelon');
-        // $this->config['delay'] = $this->CI->config->item('delay', 'echelon');
+        $this->config['repositories'] = $this->CI->config->item('repositories', 'warehouse');
+        error_log(print_r($this->config['repositories'], true));
     }
 
 /*
@@ -54,23 +57,34 @@ class Warehouse {
     /**
      * Load a Warehouse class.
      *
-     * @param   string     $warehouse_name
+     * @param   string     $repository_name
      * @return  mixed
      */
-    public function load(string $warehouse_name)
+    public function load(string $repository_name)
     {
-        error_log('load warehouse `' . $warehouse_name . '`');
+        error_log('load warehouse repository: `' . $repository_name . '`');
 
-        $database_class = 'Repositories\\Database\\' . $warehouse_name . 'Database';
-        $cache_class = 'Repositories\\Cache\\' . $warehouse_name . 'Cache';
+        if (array_key_exists($repository_name, $this->config['repositories']) === false) {
+            // TODO: throw exception
+            error_log('repository config doesnt exist');
+            return null;
+        }
+
+        // Resolve cache and database classes
+        $cache_class = $this->config['repositories'][$repository_name]['cache'];
+        $database_class = $this->config['repositories'][$repository_name]['database'];
+
+        // Validate that the classes exist
+        if (class_exists($cache_class) === false) {
+            // TODO: throw exception
+            error_log('cache class doesnt exist');
+        }
+
+        if (class_exists($database_class) === false) {
+            // TODO: throw exception
+            error_log('database class doesnt exist');
+        }
 
         return new $cache_class(new $database_class());
     }
 }
-
-//$database_instance = $database_class->newInstance();
-//error_log($database_class);
-
-//$cache_class = new \ReflectionClass('Repositories\\Cache\\' . $warehouse_name . 'Cache');
-//$cache_instance = $cache_class->newInstance($database_instance);
-//error_log($cache_class);
