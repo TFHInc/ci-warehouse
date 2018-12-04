@@ -26,9 +26,9 @@ class Warehouse {
     protected $config;
 
     /**
-     * Create an instance of Echelon.
+     * Create an instance of Warehouse.
      *
-     * @return Echelon
+     * @return Warehouse
      */
     public function __construct()
     {
@@ -38,12 +38,11 @@ class Warehouse {
         // Load the Warehouse config file located in application/confw/warehouse.php
         $this->CI->config->load('warehouse', TRUE);
 
-        // TODO: Validate the configuration
-        //$this->validateConfiguration();
+        // Validate the configuration
+        $this->validateConfiguration();
 
         // Define the configuration
         $this->config['repositories'] = $this->CI->config->item('repositories', 'warehouse');
-        error_log(print_r($this->config['repositories'], true));
     }
 
 /*
@@ -51,7 +50,7 @@ class Warehouse {
 | Warehouse
 |--------------------------------------------------------------------------
 |
-| Load a Warehouse class.
+| Hanlde the Warehouse class.
 |
 */
     /**
@@ -62,29 +61,50 @@ class Warehouse {
      */
     public function load(string $repository_name)
     {
-        error_log('load warehouse repository: `' . $repository_name . '`');
-
-        if (array_key_exists($repository_name, $this->config['repositories']) === false) {
-            // TODO: throw exception
-            error_log('repository config doesnt exist');
-            return null;
+        // Get cache config
+        if (array_key_exists('cache', $this->config['repositories'][$repository_name]) === true) {
+            $cache_class = $this->config['repositories'][$repository_name]['cache'];
+        } else {
+            throw new Exceptions\InvalidConfigurationException('The `' . $repository_name . '` repository configuration does not contain a `cache` array key.');
         }
 
-        // Resolve cache and database classes
-        $cache_class = $this->config['repositories'][$repository_name]['cache'];
-        $database_class = $this->config['repositories'][$repository_name]['database'];
+        // Get database config
+        if (array_key_exists('database', $this->config['repositories'][$repository_name]) === true) {
+            $database_class = $this->config['repositories'][$repository_name]['database'];
+        } else {
+            throw new Exceptions\InvalidConfigurationException('The `' . $repository_name . '` repository configuration does not contain a `database` array key.');
+        }
 
-        // Validate that the classes exist
+        // Validate that the cache class exists
         if (class_exists($cache_class) === false) {
-            // TODO: throw exception
-            error_log('cache class doesnt exist');
+            throw new Exceptions\ClassNotFoundException('The class ' . $cache_class . ' does not exist and cannot be constructed.');
         }
 
+        // Validate that the database class exists
         if (class_exists($database_class) === false) {
-            // TODO: throw exception
-            error_log('database class doesnt exist');
+            throw new Exceptions\ClassNotFoundException('The class ' . $database_class . ' does not exist and cannot be constructed.');
         }
 
         return new $cache_class(new $database_class());
+    }
+
+/*
+|--------------------------------------------------------------------------
+| Validations
+|--------------------------------------------------------------------------
+|
+| Validations for the Warehouse.
+|
+*/
+    /**
+     * Validate the configuration file.
+     *
+     * @return void
+     */
+    private function validateConfiguration(): void
+    {
+        if (!$this->CI->config->item('repositories', 'warehouse')) {
+            throw new Exceptions\InvalidConfigurationException('The Warehouse configuration does not contain a `repositories` array.');
+        }
     }
 }
